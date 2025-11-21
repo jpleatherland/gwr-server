@@ -1,12 +1,17 @@
 package main
 
 import (
-	"github.com/jpleatherland/gwr-server/server/server"
+	"github.com/jpleatherland/gwr-server/internal/server"
+	"log"
 	"net/http"
 )
 
 func main() {
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: server.NewHandler(),
+	}
 
-	http.HandleFunc("/", server.handler)
-	return
+	log.Printf("Listening on %v", server.Addr)
+	log.Fatal(server.ListenAndServe())
 }
