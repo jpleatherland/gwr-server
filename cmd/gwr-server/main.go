@@ -1,17 +1,33 @@
 package main
 
 import (
-	"github.com/jpleatherland/gwr-server/internal/server"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/jpleatherland/gwr-server/internal/middleware"
+	"github.com/jpleatherland/gwr-server/internal/server"
 )
 
 func main() {
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: server.NewHandler(),
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
 	}
 
-	log.Printf("Listening on %v", server.Addr)
-	log.Fatal(server.ListenAndServe())
+	oauthClientId := os.Getenv("OAUTH_CLIENT_ID")
+	oauthClientSecret := os.Getenv("OAUTH_CLIENT_SECRET")
+	oauthRedirectUrl := os.Getenv("OAUTH_REDIRECT_URI")
+
+	resources := middleware.Resources{
+		ClientId:          oauthClientId,
+		ClientSecret:      oauthClientSecret,
+		ClientRedirectURI: oauthRedirectUrl,
+	}
+
+	srv := server.NewServer(&resources)
+
+	log.Printf("Listening on %v", srv.Addr)
+	log.Fatal(http.ListenAndServe(":8080", srv))
 }
